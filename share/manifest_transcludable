@@ -1,0 +1,18 @@
+# pdf2htmlEX manifest 
+# AI LABS PATCH: A transcludable manifest (so we can ajax in the pdf)
+#############
+# PDF specific CSS styles - Do not modify
+$css
+
+#############
+# The container of PDF pages
+# check base.css for an example and requirements of its CSS styles
+"""
+<div id="page-container">
+"""
+$pages
+"""
+</div>
+"""
+
+# MANIFEST END

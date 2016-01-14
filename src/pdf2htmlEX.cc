@@ -58,6 +58,7 @@ void show_version_and_exit(const char * dummy = nullptr)
     cerr << "pdf2htmlEX version " << PDF2HTMLEX_VERSION << endl;
     cerr << "Copyright 2012-2015 Lu Wang <coolwanglu@gmail.com> and other contributors" << endl;
     cerr << "AI LABS PATCHES:" << endl;
+    cerr << " ?/?/2015: Patch to provide control of path refs and analytics." << endl;
     cerr << " 1/14/2016: Patch to provide option to validate font glyph lookups, removing fonts with bad glyph lookups." << endl;
     cerr << "Libraries: " << endl;
     cerr << "  poppler " << POPPLER_VERSION << endl;
@@ -143,6 +144,11 @@ void parse_options (int argc, char **argv)
         .add("use-cropbox", &param.use_cropbox, 1, "use CropBox instead of MediaBox")
         .add("hdpi", &param.h_dpi, 144.0, "horizontal resolution for graphics in DPI")
         .add("vdpi", &param.v_dpi, 144.0, "vertical resolution for graphics in DPI")
+
+        // -- AI LABS PATCH --
+        .add("www-path", &param.www_path, "", "AI LABS: specify a path to make external image request to nginx")
+        .add("manifest", &param.manifest, "manifest_standalone", "Use standalone or transcludable mode?")
+        // -- AI LABS PATCH END --
 
         // output files
         .add("embed", "specify which elements should be embedded into output", embed_parser, true)

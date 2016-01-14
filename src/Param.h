@@ -15,6 +15,9 @@ namespace pdf2htmlEX {
 
 struct Param
 {
+    std::string www_path; // AI LABS PATCH ORIG 2015
+    std::string manifest; // AI LABS PATCH: Allow setting of manifest option, to "manifest_standalone" or "manifest_transcludable" 2015
+
     // pages
     int first_page, last_page;
 

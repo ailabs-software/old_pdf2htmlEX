@@ -404,7 +404,8 @@ void HTMLRenderer::post_process(void)
     }
 
     // apply manifest
-    ifstream manifest_fin((char*)str_fmt("%s/%s", param.data_dir.c_str(), MANIFEST_FILENAME.c_str()), ifstream::binary);
+    ifstream manifest_fin((char*)str_fmt("%s/%s", param.data_dir.c_str(), param.manifest.c_str()), ifstream::binary);
+
     if(!manifest_fin)
         throw "Cannot open the manifest file";
 

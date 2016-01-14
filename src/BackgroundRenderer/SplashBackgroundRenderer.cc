@@ -188,7 +188,8 @@ void SplashBackgroundRenderer::embed_image(int pageno)
         }
         else
         {
-            f_page << (char*)html_renderer->str_fmt("bg%x.%s", pageno, format.c_str());
+            //ORIGINAL AI LABS PATCH 2015
+            f_page << (char*)html_renderer->str_fmt("%sbg%x.%s", param.www_path.c_str(), pageno, format.c_str());
         }
         f_page << "\"/>";
     }
