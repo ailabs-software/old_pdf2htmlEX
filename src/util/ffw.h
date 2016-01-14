@@ -29,6 +29,7 @@ long ffw_get_version(void);
 // load & save
 void ffw_new_font();
 void ffw_load_font(const char * filename);
+bool ffw_validate_glyphlookups(void); // AI LABS PATCH 1/14/2016
 void ffw_prepare_font(void);
 
 void ffw_save(const char * filename);

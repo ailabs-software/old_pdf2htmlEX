@@ -108,7 +108,7 @@ void ffw_new_font()
     cur_fv = FVAppend(_FontViewCreate(SplineFontNew()));
 }
 
-void ffw_load_font(const char * filename)
+void ffw_load_font(const char * filename) // Similar to PSTValid in Fontforge lookups.c
 {
     assert((cur_fv == NULL) && "Previous font is not destroyed");
 
@@ -128,9 +128,63 @@ void ffw_load_font(const char * filename)
     cur_fv = font->fv;
 }
 
+/* AI LABS PATCH: Validate fonts */
+static int ffw_pstvalid(SplineFont *sf,PST *pst) {
+  
+    char *start, *pt, ch;
+    int ret;
+
+    switch ( pst->type ) {
+      case pst_position:
+return( true );
+      case pst_pair:
+return( SCWorthOutputting(SFGetChar(sf,-1,pst->u.pair.paired)) );
+      case pst_substitution: case pst_alternate: case pst_multiple:
+      case pst_ligature:
+printf("VALIDATE ffw_pstvalid!\n");
+    for ( start = pst->u.mult.components; *start ; ) {
+        for ( pt=start; *pt && *pt!=' '; ++pt );
+        ch = *pt; *pt = '\0';
+        ret = SCWorthOutputting(SFGetChar(sf,-1,start));
+        *pt = ch;
+        if ( !ret )
+printf("VERY BAD EGG!!!!!!!!!!!!!!");
+return( false );
+        if ( ch==0 )
+        start = pt;
+        else
+        start = pt+1;
+    }
+    }
+  return( true );
+}
+
+bool ffw_validate_glyphlookups(void)
+{
+  int i;
+  SplineFont * sf = cur_fv->sf;
+
+  for (i = 0; i < sf->glyphcnt; ++i)
+  {
+    SplineChar * sc = sf->glyphs[i];
+    if (sc && sc->possub != NULL)
+    {
+      // pst_substitution, pst_alternate,
+      // pst_multiple, pst_ligature,
+      if ( !ffw_pstvalid(sf, sc->possub) )
+      {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
 /*
  * Fight again dirty stuffs
  */
+
 void ffw_prepare_font(void)
 {
     memset(cur_fv->selected, 1, cur_fv->map->enccount);
@@ -144,6 +198,7 @@ void ffw_prepare_font(void)
      */
     int i;
     SplineFont * sf = cur_fv->sf;
+
     for(i = 0; i < sf->glyphcnt; ++i)
     {
         SplineChar * sc = sf->glyphs[i];

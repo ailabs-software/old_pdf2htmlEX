@@ -57,6 +57,8 @@ void show_version_and_exit(const char * dummy = nullptr)
 {
     cerr << "pdf2htmlEX version " << PDF2HTMLEX_VERSION << endl;
     cerr << "Copyright 2012-2015 Lu Wang <coolwanglu@gmail.com> and other contributors" << endl;
+    cerr << "AI LABS PATCHES:" << endl;
+    cerr << " 1/14/2016: Patch to provide option to validate font glyph lookups, removing fonts with bad glyph lookups." << endl;
     cerr << "Libraries: " << endl;
     cerr << "  poppler " << POPPLER_VERSION << endl;
     cerr << "  libfontforge " << ffw_get_version() << endl;
@@ -172,6 +174,14 @@ void parse_options (int argc, char **argv)
         .add("squeeze-wide-glyph", &param.squeeze_wide_glyph, 1, "shrink wide glyphs instead of truncating them")
         .add("override-fstype", &param.override_fstype, 0, "clear the fstype bits in TTF/OTF fonts")
         .add("process-type3", &param.process_type3, 0, "convert Type 3 fonts for web (experimental)")
+        // AI LABS PATCH 1/14/2016: Will cause skipping of fonts which have glyph problems.
+        // Why this is necessary when viewing of user-provided PDFs must be supported:
+        // Fonts with missing ligatures cause certain two-letter permutations to end up removed from rendered text,
+        // like "tt" and "ff".
+        // This is done by running PSTValid() from Fontforge in lookups.c. Because we don't want two forks, we located that code in ffw.c so it is accessible to this program.
+        // By detecting these table lookup problems in the font, we can disable the font so the text will at least display.
+        // FUTURE: Keep text size consistent by emulating the font's em size in generic san-serif substituted font using simple rule.
+        .add("validate-font-glyphtable", &param.validate_font_glyphtable, 0, "Turn on AI LABS validation of font glyphs lookup table to prevent missing ligature render problems.")
 
         // text
         .add("heps", &param.h_eps, 1.0, "horizontal threshold for merging text, in pixels")

@@ -54,6 +54,14 @@ struct Param
     int squeeze_wide_glyph;
     int override_fstype;
     int process_type3;
+    // AI LABS PATCH 1/14/2016: Will cause skipping of fonts which have glyph problems.
+    // Why this is necessary when viewing of user-provided PDFs must be supported:
+    // Fonts with missing ligatures cause certain two-letter permutations to end up removed from rendered text,
+    // like "tt" and "ff".
+    // This is done by running PSTValid() from Fontforge in lookups.c. Because we don't want two forks, we located that code in ffw.c so it is accessible to this program.
+    // By detecting these table lookup problems in the font, we can disable the font so the text will at least display.
+    // FUTURE: Keep text size consistent by emulating the font's em size in generic san-serif substituted font using simple rule.
+    int validate_font_glyphtable;
 
     // text
     double h_eps, v_eps;

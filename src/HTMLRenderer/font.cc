@@ -373,7 +373,8 @@ string HTMLRenderer::dump_type3_font (GfxFont * font, FontInfo & info)
 #endif
 }
 
-void HTMLRenderer::embed_font(const string & filepath, GfxFont * font, FontInfo & info, bool get_metric_only)
+// AI LABS PATCH 1/14/2016: embed_font() will now return bool indicating successful validation, if Param.validate_font_glyphtable set.
+bool HTMLRenderer::embed_font(const string & filepath, GfxFont * font, FontInfo & info, bool get_metric_only)
 {
     if(param.debug)
     {
@@ -381,7 +382,19 @@ void HTMLRenderer::embed_font(const string & filepath, GfxFont * font, FontInfo 
     }
 
     ffw_load_font(filepath.c_str());
+
     ffw_prepare_font();
+
+    // AI LABS PATCH 1/14/2016.
+    if (param.validate_font_glyphtable)
+    {
+      printf("AI LABS: Validating font (--validate-font-glyphtable is on)...\n");
+      if ( !ffw_validate_glyphlookups() ) // ffw.c will validate the currently open fontview's possub (glyph lookup table).
+      {
+        printf("AI LABS: Skipping font due to bad glyph lookups.\n");
+        return false;
+      }
+    }
 
     if(param.debug)
     {
@@ -432,7 +445,7 @@ void HTMLRenderer::embed_font(const string & filepath, GfxFont * font, FontInfo 
         ffw_fix_metric();
         ffw_get_metric(&info.ascent, &info.descent);
         ffw_close();
-        return;
+        return true; // Success
     }
 
     used_map = preprocessor.get_code_map(hash_ref(font->getID()));
@@ -811,6 +824,7 @@ void HTMLRenderer::embed_font(const string & filepath, GfxFont * font, FontInfo 
     ffw_save(fn.c_str());
 
     ffw_close();
+    return true; // Success.
 }
 
 
@@ -920,12 +934,14 @@ void HTMLRenderer::install_embedded_font(GfxFont * font, FontInfo & info)
 
     if(path != "")
     {
-        embed_font(path, font, info);
+      if ( embed_font(path, font, info) ) // AI LABS PATCH 1/14/2016
+      {
         export_remote_font(info, param.font_format, font);
+      }
     }
     else
     {
-        export_remote_default_font(info.id);
+      export_remote_default_font(info.id);
     }
 }
 
@@ -947,8 +963,10 @@ void HTMLRenderer::install_external_font(GfxFont * font, FontInfo & info)
     {
         if(localfontloc != nullptr)
         {
-            embed_font(string(localfontloc->path->getCString()), font, info);
-            export_remote_font(info, param.font_format, font);
+            if ( embed_font(string(localfontloc->path->getCString()), font, info) ) // AI LABS PATCH 1/14/2016
+            {
+              export_remote_font(info, param.font_format, font);
+            }
             delete localfontloc;
             return;
         }
